@@ -3,5 +3,9 @@
 
 int command_cd(char *path)
 {
-    return chdir(path);
+    int error = chdir(path);
+    if (error) {
+        printf("Unable to change directory to \"%s\".\n", path);
+    }
+    return error;
 }
