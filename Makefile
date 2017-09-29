@@ -2,7 +2,7 @@
 TARGET = crash
 
 CC = gcc
-CFLAGS = -std=c99 -Wall -I.
+CFLAGS = -std=c99 -Wall -I. -g
 
 LINKER = gcc
 LFLAGS = -Wall -I. -lm

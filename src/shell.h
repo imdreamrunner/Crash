@@ -3,3 +3,5 @@
 extern char input_buffer[INPUT_BUFFER_SIZE];
 
 int input_loop();
+
+void sigint_handler();

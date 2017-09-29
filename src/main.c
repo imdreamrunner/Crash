@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <termios.h>
+#include <signal.h>
 
 #include "shell.h"
 
@@ -18,6 +19,10 @@ int main()
     // Apply new settings.
     tcsetattr(STDIN_FILENO, TCSANOW, &new_tio);
 
+    // Hook Ctrl + C event.
+    signal(SIGINT, sigint_handler);
+
+    // Start shell input looping.
     int return_value = input_loop();
 
     // Restore old settings.
