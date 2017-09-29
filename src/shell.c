@@ -2,11 +2,13 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "shell.h"
+#include "color.h"
+#include "launch.h"
 #include "commands/ls.h"
 #include "commands/cd.h"
-#include "color.h"
 
 char input_buffer[INPUT_BUFFER_SIZE];
 char current_command[INPUT_BUFFER_SIZE];
@@ -40,6 +42,11 @@ void process_input()
 bool check_command(char *command)
 {
     return strcmp(current_command, command) == 0;
+}
+
+bool start_with(char *prefix)
+{
+    return strncmp(prefix, current_command, strlen(prefix)) == 0;
 }
 
 void get_current_folder(char *output)
@@ -130,6 +137,31 @@ void line_loop()
     {
         printf("\e[1;1H\e[2J");
     }
+    else if (start_with("./"))
+    {
+        int argument_index = 0;
+        int current_position = 0;
+        char **arguments = malloc(MAX_ARGUMENT_NUMBER);
+        arguments[0] = malloc(MAX_PATH_LENGTH);
+        for (int i = 0; i < strlen(current_command); i++)
+        {
+            if (current_command[i] == ' ')
+            {
+                // Terminate current argument.
+                arguments[argument_index][current_position] = 0;
+                argument_index++;
+                current_position = 0;
+                arguments[argument_index] = malloc(MAX_PATH_LENGTH);
+                continue;
+            }
+            arguments[argument_index][current_position] = current_command[i];
+            current_position ++;
+        }
+        // Terminate current argument.
+        arguments[argument_index][current_position] = 0;
+        arguments[argument_index + 1] = 0;
+        launch_process(arguments);
+    }
     else
     {
         if (strlen(current_command))
@@ -154,7 +186,7 @@ int input_loop()
 
 void sigint_handler()
 {
-    printf("\nPlease use \"exit\" command to exit the shell.\n");
-
+    // printf("\nPlease use \"exit\" command to exit the shell.\n");
+    printf("\n");
     restart_input();
 }
