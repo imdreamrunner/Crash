@@ -41,15 +41,19 @@ bool check_command(char *command)
     return strcmp(current_command, command) == 0;
 }
 
-void get_current_folder(char *output) {
+void get_current_folder(char *output)
+{
     int last_slash = 0;
     int cwd_length = strlen(current_working_directory);
-    for (int i = 0; i < cwd_length; i++) {
-        if (current_working_directory[i] == '/') {
+    for (int i = 0; i < cwd_length; i++)
+    {
+        if (current_working_directory[i] == '/')
+        {
             last_slash = i;
         }
     }
-    for (int i = last_slash + 1; i < cwd_length; i++) {
+    for (int i = last_slash + 1; i < cwd_length; i++)
+    {
         output[i - last_slash - 1] = current_working_directory[i];
     }
     output[cwd_length - last_slash] = 0;
@@ -127,7 +131,8 @@ void line_loop()
     }
     else
     {
-        if (strlen(current_command)) {
+        if (strlen(current_command))
+        {
             printf("Command \"%s\" is not found.\n", current_command);
         }
     }
