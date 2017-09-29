@@ -6,6 +6,7 @@
 #include "shell.h"
 #include "commands/ls.h"
 #include "commands/cd.h"
+#include "color.h"
 
 char input_buffer[INPUT_BUFFER_SIZE];
 char current_command[INPUT_BUFFER_SIZE];
@@ -56,7 +57,7 @@ void get_current_folder(char *output)
     {
         output[i - last_slash - 1] = current_working_directory[i];
     }
-    output[cwd_length - last_slash] = 0;
+    output[cwd_length - last_slash - 1] = 0;
 }
 
 void restart_input()
@@ -65,7 +66,7 @@ void restart_input()
     getcwd(current_working_directory, sizeof(current_working_directory));
     char current_folder[MAX_PATH_LENGTH];
     get_current_folder(current_folder);
-    printf("%s > ", current_folder);
+    printf(ANSI_COLOR_BLUE "%s " ANSI_COLOR_YELLOW "> " ANSI_COLOR_RESET, current_folder);
 }
 
 void line_loop()
