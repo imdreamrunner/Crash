@@ -76,40 +76,56 @@ void restart_input()
     printf(ANSI_COLOR_BLUE "%s " ANSI_COLOR_YELLOW "> " ANSI_COLOR_RESET, current_folder);
 }
 
+bool process_key(unsigned char c)
+{
+    if (c == '\n')
+    {
+        printf("\n");
+        return true;
+    }
+    else if (c == 127 || c == 8)
+    {
+        if (position > 0)
+        {
+            // Delete or backspace.
+            printf("\b \b");
+            position--;
+        }
+    }
+    else if (c == '\t')
+    {
+        // This is a tab.
+    }
+    else if (c == 27) {
+        char next = getchar();
+        if (next == 91) {
+            switch (getchar()) {
+                case 65:
+                    break;
+            }
+        } else {
+            return process_key(next);
+        }
+    }
+    else
+    {
+        // Other keys.
+        printf("%c", c);
+        input_buffer[position] = c;
+        position++;
+    }
+    return process_key(getchar());
+}
+
 void line_loop()
 {
-    unsigned char c = 0;
-
     restart_input();
 
     while (true)
     {
-        c = getchar();
-
-        if (c == '\n')
+        if (process_key(getchar()))
         {
-            printf("\n");
             break;
-        }
-        else if (c == 127 || c == 8)
-        {
-            if (position > 0)
-            {
-                // Delete or backspace.
-                printf("\b \b");
-                position--;
-            }
-        }
-        else if (c == '\t')
-        {
-            // This is a tab.
-        }
-        else
-        {
-            // Other keys.
-            printf("%c", c);
-            input_buffer[position] = c;
-            position++;
         }
     }
 
