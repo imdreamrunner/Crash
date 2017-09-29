@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <signal.h>
+#include <stdio.h>
 
 #include "shell.h"
 
@@ -8,6 +9,9 @@
 int main()
 {
     struct termios old_tio, new_tio;
+
+    // Disable output buffer.
+    setbuf(stdout, NULL);
 
     // Get old terminal IO settings.
     tcgetattr(STDIN_FILENO, &old_tio);

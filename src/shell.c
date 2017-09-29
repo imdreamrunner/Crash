@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "shell.h"
 #include "commands/ls.h"
@@ -8,6 +9,7 @@
 
 char input_buffer[INPUT_BUFFER_SIZE];
 char current_command[INPUT_BUFFER_SIZE];
+char current_working_directory[MAX_PATH_LENGTH];
 
 int return_value = 0;
 bool exited = false;
@@ -39,10 +41,27 @@ bool check_command(char *command)
     return strcmp(current_command, command) == 0;
 }
 
+void get_current_folder(char *output) {
+    int last_slash = 0;
+    int cwd_length = strlen(current_working_directory);
+    for (int i = 0; i < cwd_length; i++) {
+        if (current_working_directory[i] == '/') {
+            last_slash = i;
+        }
+    }
+    for (int i = last_slash + 1; i < cwd_length; i++) {
+        output[i - last_slash - 1] = current_working_directory[i];
+    }
+    output[cwd_length - last_slash] = 0;
+}
+
 void restart_input()
 {
     position = 0;
-    printf(" > ");
+    getcwd(current_working_directory, sizeof(current_working_directory));
+    char current_folder[MAX_PATH_LENGTH];
+    get_current_folder(current_folder);
+    printf("%s > ", current_folder);
 }
 
 void line_loop()
@@ -97,6 +116,10 @@ void line_loop()
     else if (check_command("cd"))
     {
         command_cd(input_buffer + 3);
+    }
+    else if (check_command("pwd"))
+    {
+        printf("%s\n", current_working_directory);
     }
     else if (check_command("clear"))
     {
