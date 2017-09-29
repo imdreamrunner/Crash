@@ -1,31 +1,27 @@
-#include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
 
+#include "shell.h"
+
+// This is the entry point of the shell.
 int main()
 {
     struct termios old_tio, new_tio;
-    unsigned char c;
 
-    /* get the terminal settings for stdin */
-    tcgetattr(STDIN_FILENO,&old_tio);
+    // Get old terminal IO settings.
+    tcgetattr(STDIN_FILENO, &old_tio);
 
-    /* we want to keep the old setting to restore them a the end */
-    new_tio=old_tio;
+    // Create new settings.
+    new_tio = old_tio;
+    new_tio.c_lflag &= (~ICANON & ~ECHO);
 
-    /* disable canonical mode (buffered i/o) and local echo */
-    new_tio.c_lflag &=(~ICANON & ~ECHO);
+    // Apply new settings.
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_tio);
 
-    /* set the new settings immediately */
-    tcsetattr(STDIN_FILENO,TCSANOW,&new_tio);
+    int return_value = input_loop();
 
-    do {
-         c=getchar();
-         printf("%d ",c);
-    } while(c!='q');
+    // Restore old settings.
+    tcsetattr(STDIN_FILENO, TCSANOW, &old_tio);
 
-    /* restore the former settings */
-    tcsetattr(STDIN_FILENO,TCSANOW,&old_tio);
-
-    return 0;
+    return return_value;
 }
