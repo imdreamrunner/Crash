@@ -3,6 +3,7 @@
 
 #include "shell.h"
 #include "commands/ls.h"
+#include "commands/cd.h"
 
 char input_buffer[INPUT_BUFFER_SIZE];
 
@@ -26,22 +27,26 @@ bool check_command(char *command)
         position++;
         c++;
     }
-    return true;
+    return input_buffer[position] == ' ' || input_buffer[position] == 0;
 }
 
 void line_loop()
 {
-    unsigned char c;
+    unsigned char c = 0;
 
     printf("~ > ");
 
     int position = 0;
 
-    do
+    while (true)
     {
         c = getchar();
 
-        if (c == 127 || c == 8)
+        if (c == '\n') {
+            printf("\n");
+            break;
+        }
+        else if (c == 127 || c == 8)
         {
             // Delete or backspace.
             printf("\b \b");
@@ -54,8 +59,7 @@ void line_loop()
             input_buffer[position] = c;
             position++;
         }
-
-    } while (c != '\n');
+    }
 
     input_buffer[position] = 0;
 
@@ -64,10 +68,13 @@ void line_loop()
         exited = true;
         return_value = 0;
     }
-
     else if (check_command("ls"))
     {
         command_ls();
+    }
+    else if (check_command("cd"))
+    {
+        command_cd(input_buffer + 3);
     }
 }
 
