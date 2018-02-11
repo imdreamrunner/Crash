@@ -1,27 +1,20 @@
-#include <unistd.h>
-#include <termios.h>
 #include <signal.h>
 #include <stdio.h>
 
 #include "shell.h"
+#include "tio.h"
 
-// This is the entry point of the shell.
+// 程序入口。
 int main()
 {
-    struct termios old_tio, new_tio;
-
-    // Disable output buffer.
+    // 取消输出缓存。因为默认 Linux 的程序输出会有缓存，这样输出的内容可能不会即时显示在屏幕上。
+    // 因为 Shell 是呼叫程序，所以我们这里要取消程序输出的缓存。
     setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
 
-    // Get old terminal IO settings.
-    tcgetattr(STDIN_FILENO, &old_tio);
-
-    // Create new settings.
-    new_tio = old_tio;
-    new_tio.c_lflag &= (~ICANON & ~ECHO);
-
-    // Apply new settings.
-    tcsetattr(STDIN_FILENO, TCSANOW, &new_tio);
+    // 我们这里还需要修改 Terminal IO 的设置。
+    backup_tio();
+    set_tio();
 
     // Hook Ctrl + C event.
     signal(SIGINT, sigint_handler);
@@ -29,8 +22,6 @@ int main()
     // Start shell input looping.
     int return_value = input_loop();
 
-    // Restore old settings.
-    tcsetattr(STDIN_FILENO, TCSANOW, &old_tio);
-
+    restore_tio();
     return return_value;
 }

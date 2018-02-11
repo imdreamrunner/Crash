@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 
 #include "config.h"
+#include "tio.h"
 
 bool is_running = 0;
 
@@ -16,6 +17,8 @@ int launch_process(char **args)
     pid_t pid = fork();
     if (pid == 0)
     {
+        // 恢复正常的TIO设置给子进程。
+        restore_tio();
         // 子进程。
         if (execvp(args[0], args) == -1)
         {
@@ -39,6 +42,7 @@ int launch_process(char **args)
             waitpid(pid, &status, WUNTRACED);
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
         is_running = 0;
+        set_tio();
         return status;
     }
 
