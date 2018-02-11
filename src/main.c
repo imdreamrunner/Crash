@@ -16,12 +16,15 @@ int main()
     backup_tio();
     set_tio();
 
-    // Hook Ctrl + C event.
+    // 绑定 Ctrl + C 发送的 SIGINT 事件。
     signal(SIGINT, sigint_handler);
 
-    // Start shell input looping.
+    // 启动 Shell 的输入循环。
     int return_value = input_loop();
 
+    // 恢复之前的TIO设置。
     restore_tio();
+
+    // 结束程序。
     return return_value;
 }
