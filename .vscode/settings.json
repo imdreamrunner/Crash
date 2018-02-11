@@ -6,6 +6,7 @@
         "dirent.h": "c",
         "types.h": "c",
         "stdlib.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "cd.h": "c"
     }
 }

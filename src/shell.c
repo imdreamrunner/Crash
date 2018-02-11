@@ -52,6 +52,10 @@ void process_input()
     strcpy(current_command, current_arguments[0]);
 }
 
+void free_input() {
+
+}
+
 /**
  * Check if the current input buffer is executing certain command
  * @param command   The command as a string.
@@ -184,6 +188,10 @@ void line_loop()
     }
     else if (exist_in_path() || start_with("./"))
     {
+        if (!start_with("./")) {
+            // 替换完整路径。
+            current_arguments[0] = get_executable_path(current_command);
+        }
         launch_process(current_arguments);
     }
     else
@@ -193,6 +201,7 @@ void line_loop()
             printf("Command \"%s\" is not found.\n", current_command);
         }
     }
+    free_input();
 }
 
 int input_loop()
@@ -210,7 +219,11 @@ int input_loop()
 
 void sigint_handler()
 {
-    // printf("\nPlease use \"exit\" command to exit the shell.\n");
-    printf("\n");
-    restart_input();
+    if (is_child_process_running()) {
+
+    } else {
+        printf("\nPlease use \"exit\" command to exit the shell.\n");
+        printf("\n");
+        restart_input();
+    }
 }
