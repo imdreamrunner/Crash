@@ -10,9 +10,14 @@
 #include "commands/ls.h"
 #include "commands/cd.h"
 
+// 输入缓存，当前行输入的内容。
 char input_buffer[INPUT_BUFFER_SIZE];
+// 当前命令，第一个输入的内容。
 char current_command[INPUT_BUFFER_SIZE];
+// 当前工作路径
 char current_working_directory[MAX_PATH_LENGTH];
+// 当前参数
+char *current_arguments[MAX_ARGUMENT_NUMBER];
 
 int return_value = 0;
 bool exited = false;
@@ -23,16 +28,28 @@ int position = 0;
  */
 void process_input()
 {
-    // Set current command.
-    int p = 0;
-    char *c = input_buffer;
-    while (*c != 0 && *c != ' ')
+    int argument_index = 0;
+    int current_position = 0;
+    current_arguments[0] = malloc(MAX_PATH_LENGTH);
+    for (int i = 0; i < strlen(input_buffer); i++)
     {
-        current_command[p] = *c;
-        c++;
-        p++;
+        if (input_buffer[i] == ' ')
+        {
+            // Terminate current argument.
+            current_arguments[argument_index][current_position] = 0;
+            argument_index++;
+            current_position = 0;
+            current_arguments[argument_index] = malloc(MAX_PATH_LENGTH);
+            continue;
+        }
+        current_arguments[argument_index][current_position] = input_buffer[i];
+        current_position++;
     }
-    current_command[p] = 0;
+    // Terminate current argument.
+    current_arguments[argument_index][current_position] = 0;
+    current_arguments[argument_index + 1] = 0;
+
+    strcpy(current_command, current_arguments[0]);
 }
 
 /**
@@ -42,6 +59,11 @@ void process_input()
 bool check_command(char *command)
 {
     return strcmp(current_command, command) == 0;
+}
+
+bool exist_in_path()
+{
+    return get_executable_path(current_command) != NULL;
 }
 
 bool start_with(char *prefix)
@@ -76,41 +98,48 @@ void restart_input()
     printf(ANSI_COLOR_BLUE "%s " ANSI_COLOR_YELLOW "> " ANSI_COLOR_RESET, current_folder);
 }
 
+/**
+ * 处理按键。
+ * @param c   按键代码。
+ */
 bool process_key(unsigned char c)
 {
-    if (c == '\n')
+    if (c == '\n') // Newline 回车
     {
         printf("\n");
         return true;
     }
-    else if (c == 127 || c == 8)
+    else if (c == 127 || c == 8) // Delete or Backspace
     {
         if (position > 0)
         {
-            // Delete or backspace.
             printf("\b \b");
             position--;
         }
     }
-    else if (c == '\t')
+    else if (c == '\t') // Tab
     {
-        // This is a tab.
     }
-    else if (c == 27) {
+    else if (c == 27) // Escape
+    {
         char next = getchar();
-        if (next == 91) {
-            switch (getchar()) {
-                case 65:
-                    break;
+        if (next == 91)
+        {
+            switch (getchar())
+            {
+            case 65:
+                break;
             }
-        } else {
+        }
+        else
+        {
             return process_key(next);
         }
     }
-    else
+    else // 其它按键。
     {
-        // Other keys.
         printf("%c", c);
+        // 加进输入缓存里。
         input_buffer[position] = c;
         position++;
     }
@@ -143,7 +172,7 @@ void line_loop()
     }
     else if (check_command("cd"))
     {
-        command_cd(input_buffer + 3);
+        command_cd(current_arguments[1]);
     }
     else if (check_command("pwd"))
     {
@@ -153,30 +182,9 @@ void line_loop()
     {
         printf("\e[1;1H\e[2J");
     }
-    else if (start_with("./"))
+    else if (exist_in_path() || start_with("./"))
     {
-        int argument_index = 0;
-        int current_position = 0;
-        char **arguments = malloc(MAX_ARGUMENT_NUMBER);
-        arguments[0] = malloc(MAX_PATH_LENGTH);
-        for (int i = 0; i < strlen(current_command); i++)
-        {
-            if (current_command[i] == ' ')
-            {
-                // Terminate current argument.
-                arguments[argument_index][current_position] = 0;
-                argument_index++;
-                current_position = 0;
-                arguments[argument_index] = malloc(MAX_PATH_LENGTH);
-                continue;
-            }
-            arguments[argument_index][current_position] = current_command[i];
-            current_position ++;
-        }
-        // Terminate current argument.
-        arguments[argument_index][current_position] = 0;
-        arguments[argument_index + 1] = 0;
-        launch_process(arguments);
+        launch_process(current_arguments);
     }
     else
     {
