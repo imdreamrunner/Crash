@@ -15,28 +15,25 @@ bool is_running = 0;
 int launch_process(char **args)
 {
     pid_t pid = fork();
-    if (pid == 0)
+    if (pid == 0) // 子进程。
     {
         // 恢复正常的TIO设置给子进程。
         restore_tio();
-        // 子进程。
         if (execvp(args[0], args) == -1)
         {
             perror("lanuch");
         }
         exit(EXIT_SUCCESS);
     }
-    else if (pid < 0)
+    else if (pid < 0)  // 无法创建子进程，打印错误。
     {
-        // 无法创建子进程，打印错误。
         perror("lanuch");
     }
-    else
+    else  // 父进程。
     {
-        // 父进程。
         int status;
         is_running = 1;
-        printf("Start child process %s...\n", args[0]);
+        printf("Start child process %s at PID %d...\n", args[0], pid);
         do
         {
             waitpid(pid, &status, WUNTRACED);
